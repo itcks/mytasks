@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Список дел</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Мои дела</h1>
+
+    <!-- Форма добавления -->
+    <form id="todo-form">
+      <input type="text" id="todo-input" placeholder="Введите задачу..." required />
+      <input type="datetime-local" id="todo-due-date" />
+      <button type="submit">Добавить</button>
+    </form>
+
+    <!-- Сортировка -->
+    <div class="sort-controls">
+      <label for="sort-select">Сортировать по:</label>
+      <select id="sort-select">
+        <option value="createdAt">Времени создания</option>
+        <option value="dueDate">Дедлайну</option>
+      </select>
+    </div>
+
+    <ul id="todo-list"></ul>
+  </div>
+
+  <!-- Модальное окно -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Завершить задачу</h3>
+      <textarea id="comment-input" placeholder="Комментарий..."></textarea>
+      <button id="complete-btn">Завершить</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
