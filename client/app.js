@@ -16,10 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentTaskId = null;
   let todos = [];
   let currentToken = localStorage.getItem("token") || "";
+  const username = localStorage.getItem("username") || "";
 
   // Элементы для отображения ошибок
   const errorEl = document.getElementById("error-message") || null;
   const authContainer = document.getElementById("auth-container") || null;
+  const userInfoEl = document.getElementById("user-info") || null;
 
   function showError(message) {
     if (errorEl) {
@@ -45,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function fetchTodos() {
     try {
-      const res = await fetch("http://localhost:3000/api/todos", setAuthHeader());
+      const res = await fetch("/api/todos", setAuthHeader());
       if (!res.ok) throw new Error("Ошибка загрузки задач");
       todos = await res.json();
       renderTodos();
@@ -56,23 +58,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function addTodo(todo) {
-    try {
-      const res = await fetch("http://localhost:3000/api/todos", {
-        ...setAuthHeader(),
-        method: "POST",
-        body: JSON.stringify(todo)
-      });
-      if (!res.ok) throw new Error("Ошибка добавления задачи");
-      return await res.json();
-    } catch (err) {
-      showError("Не удалось добавить задачу");
-      console.error(err);
-    }
+    const token = localStorage.getItem("token");
+    const response = await fetch("/api/todos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        text: todo.text,
+        createdAt: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, ''),
+        dueDate: todo.dueDate || null
+      })
+    });
+
+    return await response.json();
   }
 
   async function updateTodo(id, updates) {
     try {
-      const res = await fetch(`http://localhost:3000/api/todos/${id}`, {
+      const res = await fetch(`/api/todos/${id}`, {
         ...setAuthHeader(),
         method: "PUT",
         body: JSON.stringify(updates)
@@ -87,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function deleteTodo(id) {
     try {
-      const res = await fetch(`http://localhost:3000/api/todos/${id}`, {
+      const res = await fetch(`/api/todos/${id}`, {
         ...setAuthHeader(),
         method: "DELETE"
       });
@@ -101,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function registerUser(username, password) {
     try {
-      const res = await fetch("http://localhost:3000/api/register", {
+      const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -117,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loginUser(username, password) {
     try {
-      const res = await fetch("http://localhost:3000/api/login", {
+      const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -131,20 +136,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function saveToken(token) {
+  function saveToken(token, username) {
     currentToken = token;
     localStorage.setItem("token", token);
+    localStorage.setItem("username", username);
+    window.location.href = "/index.html";
   }
 
   function logoutUser() {
     currentToken = "";
     localStorage.removeItem("token");
-    window.location.href = "/login.html"; // перенаправление на страницу входа
+    localStorage.removeItem("username");
+    window.location.href = "/login.html";
+  }
+
+  function formatDate(dateString) {
+    if (!dateString) return "—";
+
+    // Преобразуем MySQL-дату в ISO формат для корректного парсинга
+    const date = new Date(dateString.replace(' ', 'T'));
+    return isNaN(date.getTime()) ? "Неверная дата" : date.toLocaleString();
   }
 
   function renderTodos() {
     list.innerHTML = "";
     const sortBy = sortSelect.value;
+
+    // Сортировка
     todos.sort((a, b) => {
       const aDate = new Date(a[sortBy] || Infinity);
       const bDate = new Date(b[sortBy] || Infinity);
@@ -157,8 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Цветовая индикация
       const now = new Date();
-      const createdAt = new Date(todo.created_at);
-      const dueDate = todo.due_date ? new Date(todo.due_date) : null;
+      const createdAt = new Date(todo.created_at.replace(' ', 'T'));
+      const dueDate = todo.due_date ? new Date(todo.due_date.replace(' ', 'T')) : null;
 
       if (!todo.completed) {
         if ((now - createdAt) < 24 * 60 * 60 * 1000) {
@@ -178,12 +196,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const info = document.createElement("div");
       info.className = "todo-info";
 
-      info.innerHTML = `Создано: ${new Date(todo.created_at).toLocaleString()}`;
+      info.innerHTML = `Создано: ${formatDate(todo.created_at)}`;
       if (todo.due_date) {
-        info.innerHTML += ` | Срок: ${new Date(todo.due_date).toLocaleString()}`;
+        info.innerHTML += ` | Срок: ${formatDate(todo.due_date)}`;
       }
       if (todo.completed_at) {
-        info.innerHTML += ` | Завершено: ${new Date(todo.completed_at).toLocaleString()}`;
+        info.innerHTML += ` | Завершено: ${formatDate(todo.completed_at)}`;
         if (todo.comment) {
           info.innerHTML += `<br><i>"${todo.comment}"</i>`;
         }
@@ -224,6 +242,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- Обработчики событий ---
+
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = input.value.trim();
@@ -232,7 +252,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (text !== "") {
       const newTodo = {
         text,
-        createdAt: new Date().toISOString(),
         dueDate: dueDate || null
       };
 
@@ -286,12 +305,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("login-password").value;
     const token = await loginUser(username, password);
     if (token) {
-      saveToken(token);
-      window.location.href = "/index.html";
+      saveToken(token, username);
     }
   });
 
-  if (window.location.pathname.endsWith("/index.html")) {
-    fetchTodos();
+  // --- Проверка доступа к index.html ---
+  if (window.location.pathname.endsWith("index.html") ||
+      window.location.pathname === "/" ) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login.html";
+    } else {
+      fetchTodos();
+
+      const logoutBtn = document.getElementById("logout-btn");
+      const userInfoEl = document.getElementById("user-info");
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+          logoutUser();
+        });
+      }
+
+      if (userInfoEl) {
+        const username = localStorage.getItem("username");
+        if (username) {
+          userInfoEl.textContent = `Привет, ${username}!`;
+        }
+      }
+    }
   }
 });
