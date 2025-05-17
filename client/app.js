@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Элементы для отображения ошибок
   const errorEl = document.getElementById("error-message") || null;
-  const authContainer = document.getElementById("auth-container") || null;
   const userInfoEl = document.getElementById("user-info") || null;
 
   function showError(message) {
@@ -72,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
     });
 
-    return await response.json();
+    return await response.json(); // Сервер вернёт полный объект с датами
   }
 
   async function updateTodo(id, updates) {
@@ -153,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function formatDate(dateString) {
     if (!dateString) return "—";
 
-    // Преобразуем MySQL-дату в ISO формат для корректного парсинга
     const date = new Date(dateString.replace(' ', 'T'));
     return isNaN(date.getTime()) ? "Неверная дата" : date.toLocaleString();
   }
@@ -162,10 +160,10 @@ document.addEventListener("DOMContentLoaded", () => {
     list.innerHTML = "";
     const sortBy = sortSelect.value;
 
-    // Сортировка
+    // Локальная сортировка
     todos.sort((a, b) => {
-      const aDate = new Date(a[sortBy] || Infinity);
-      const bDate = new Date(b[sortBy] || Infinity);
+      const aDate = new Date(a[sortBy]?.replace(' ', 'T') || Infinity);
+      const bDate = new Date(b[sortBy]?.replace(' ', 'T') || Infinity);
       return aDate - bDate;
     });
 
@@ -173,11 +171,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const li = document.createElement("li");
       li.className = todo.completed ? "completed" : "";
 
-      // Цветовая индикация
       const now = new Date();
-      const createdAt = new Date(todo.created_at.replace(' ', 'T'));
-      const dueDate = todo.due_date ? new Date(todo.due_date.replace(' ', 'T')) : null;
+      const createdAt = new Date(todo.created_at?.replace(' ', 'T'));
+      const dueDate = todo.due_date ? new Date(todo.due_date?.replace(' ', 'T')) : null;
 
+      // Цветовая индикация
       if (!todo.completed) {
         if ((now - createdAt) < 24 * 60 * 60 * 1000) {
           li.style.backgroundColor = "#e6ffe6"; // зелёный
@@ -186,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
           li.style.backgroundColor = "#fff8dc"; // жёлтый
         }
         if (dueDate && dueDate < now) {
-          li.classList.add("overdue"); // красный из CSS
+          li.classList.add("overdue"); // красный стиль
         }
       }
 
@@ -212,22 +210,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const toggleBtn = document.createElement("button");
       toggleBtn.textContent = todo.completed ? "Отменить" : "Готово";
-      toggleBtn.onclick = async () => {
+      toggleBtn.onclick = () => {
         if (todo.completed) {
-          await updateTodo(todo.id, { completed: false });
-          fetchTodos();
+          updateTodo(todo.id, { completed: false }).then(() => fetchTodos());
         } else {
           modal.style.display = "block";
-          currentTaskIndex = index;
           currentTaskId = todo.id;
+          currentTaskIndex = index;
         }
       };
 
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Удалить";
-      deleteBtn.onclick = async () => {
-        await deleteTodo(todo.id);
-        fetchTodos();
+      deleteBtn.onclick = () => {
+        deleteTodo(todo.id).then(() => fetchTodos());
       };
 
       actions.appendChild(toggleBtn);
@@ -252,15 +248,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (text !== "") {
       const newTodo = {
         text,
-        dueDate: dueDate || null
+        dueDate
       };
 
       const savedTodo = await addTodo(newTodo);
       if (savedTodo) {
-        todos.push(savedTodo);
+        todos.push(savedTodo); // ✅ Сохранённый объект уже содержит даты от сервера
         input.value = "";
         dueDateInput.value = "";
-        renderTodos();
+        fetchTodos(); // ✅ Получаем актуальные данные с датами
       }
     }
   });
@@ -271,12 +267,12 @@ document.addEventListener("DOMContentLoaded", () => {
       await updateTodo(currentTaskId, {
         completed: true,
         comment,
-        completedAt: new Date().toISOString()
+        completedAt: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')
       });
       modal.style.display = "none";
       commentInput.value = "";
       currentTaskId = null;
-      fetchTodos();
+      fetchTodos(); // ✅ Обновляем список с сервера
     }
   });
 
@@ -284,7 +280,9 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display = "none";
   });
 
-  sortSelect?.addEventListener("change", fetchTodos);
+  sortSelect?.addEventListener("change", () => {
+    renderTodos(); // ✅ Пересортировываем локально
+  });
 
   registerForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -310,8 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- Проверка доступа к index.html ---
-  if (window.location.pathname.endsWith("index.html") ||
-      window.location.pathname === "/" ) {
+  if (window.location.pathname.endsWith("index.html")) {
     const token = localStorage.getItem("token");
     if (!token) {
       window.location.href = "/login.html";
@@ -328,9 +325,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (userInfoEl) {
-        const username = localStorage.getItem("username");
-        if (username) {
-          userInfoEl.textContent = `Привет, ${username}!`;
+        const storedUsername = localStorage.getItem("username");
+        if (storedUsername) {
+          userInfoEl.textContent = `Привет, ${storedUsername}!`;
         }
       }
     }
