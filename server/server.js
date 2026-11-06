@@ -32,8 +32,13 @@ async function seedUsers() {
 
 const app = express();
 
+// Приложение работает за reverse-proxy (nginx/Apache) с HTTPS
+app.set('trust proxy', 1);
+
 // Раздача статики клиента
-app.use(express.static(path.join(__dirname, '..', 'client')));
+app.use(express.static(path.join(__dirname, '..', 'client'), {
+  maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0
+}));
 
 // Настройка CORS с параметрами
 app.use(cors({
@@ -54,10 +59,15 @@ setInterval(() => notify.reminders(), 60 * 1000);
 app.use('/api', routes);
 
 // Запуск сервера
+// Запуск сервера.
+// В production (NODE_ENV=production) слушаем только localhost —
+// наружу приложение отдаёт reverse-proxy (nginx/Apache) с HTTPS.
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.NODE_ENV === 'production' ? '127.0.0.1' : '0.0.0.0';
+
 process.on('uncaughtException', err => console.error('uncaught:', err.message));
 process.on('unhandledRejection', err => console.error('unhandled:', err));
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Сервер запущен на http://${HOST}:${PORT}`);
   seedUsers();
 });

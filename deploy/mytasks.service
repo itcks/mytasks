@@ -1,0 +1,19 @@
+# Systemd-юнит для автозапуска сервера mytasks (Linux-сервер)
+# Файл: /etc/systemd/system/mytasks.service
+
+[Unit]
+Description=MyTasks task server (Node.js)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/mytasks/server
+Environment=NODE_ENV=production
+# Секреты можно держать в /opt/mytasks/server/.env (dotenv подхватит)
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
