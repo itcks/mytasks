@@ -4,44 +4,186 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Список дел</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script src="theme.js"></script>
 </head>
 <body>
   <div class="container">
     <h1>Мои дела</h1>
     <p id="user-info"></p>
     <div style="text-align: right;">
+      <button id="theme-toggle">🌙 Ночь</button>
+      <button id="notif-btn">🔔<span id="notif-badge" class="badge" style="display:none;"></span></button>
+      <button id="board-btn">Доска</button>
+      <button id="admin-btn" style="display: none;">Админка</button>
       <button id="logout-btn">Выйти</button>
     </div>
+
+    <!-- Уведомления -->
+    <div id="notif-panel" class="notif-panel" style="display:none;">
+      <strong>Уведомления</strong>
+      <button id="notif-read-btn" type="button">Отметить все прочитанными</button>
+      <ul id="notif-list"></ul>
+    </div>
+
+    <!-- Календарь -->
+    <div id="calendar" class="calendar"></div>
+
     <!-- Форма добавления -->
     <form id="todo-form">
-      <input type="text" id="todo-input" placeholder="Введите задачу..." required />
-      <input type="datetime-local" id="todo-due-date" />
+      <div class="field">
+        <label for="todo-input">Задача</label>
+        <input type="text" id="todo-input" placeholder="Введите задачу..." required />
+      </div>
+      <div class="field">
+        <label for="todo-plan-date">Дата и время задачи</label>
+        <input type="datetime-local" id="todo-plan-date" title="Дата и время задачи" />
+      </div>
+      <div class="field">
+        <label for="todo-due-date">Срок исполнения</label>
+        <input type="datetime-local" id="todo-due-date" title="Срок исполнения (пусто = до конца дня)" />
+      </div>
+      <div class="field">
+        <label for="todo-priority">Приоритет</label>
+        <select id="todo-priority">
+          <option value="low">Низкий</option>
+          <option value="medium" selected>Средний</option>
+          <option value="high">Высокий</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="todo-tag">Тег</label>
+        <input type="text" id="todo-tag" placeholder="Например: ремонт" />
+      </div>
+      <div class="field">
+        <label for="todo-repeat">Повтор</label>
+        <select id="todo-repeat">
+          <option value="none">Нет</option>
+          <option value="daily">Каждый день</option>
+          <option value="weekly">Каждую неделю</option>
+          <option value="monthly">Каждый месяц</option>
+        </select>
+      </div>
+      <div class="field" id="assignee-field" style="display: none;">
+        <label for="todo-assignee">Исполнитель</label>
+        <select id="todo-assignee"></select>
+      </div>
       <button type="submit">Добавить</button>
     </form>
 
-    <!-- Сортировка -->
+    <!-- Фильтры и сортировка -->
     <div class="sort-controls">
-      <label for="sort-select">Сортировать по:</label>
-      <select id="sort-select">
-        <option value="createdAt">Времени создания</option>
-        <option value="dueDate">Дедлайну</option>
-      </select>
+      <div class="field">
+        <label for="sort-select">Сортировать по:</label>
+        <select id="sort-select">
+          <option value="created_at">Времени создания</option>
+          <option value="due_date">Дедлайну</option>
+          <option value="priority">Приоритету</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="status-select">Статус:</label>
+        <select id="status-select">
+          <option value="active">Активные</option>
+          <option value="done">Выполненные</option>
+          <option value="all">Все</option>
+          <option value="new">Новые</option>
+          <option value="in_progress">В работе</option>
+          <option value="rejected">Отклонённые</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="priority-filter">Приоритет:</label>
+        <select id="priority-filter">
+          <option value="">Любой</option>
+          <option value="high">Высокий</option>
+          <option value="medium">Средний</option>
+          <option value="low">Низкий</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="tag-filter">Тег:</label>
+        <input type="text" id="tag-filter" placeholder="тег" />
+      </div>
+      <div class="field">
+        <label for="search-input">Поиск:</label>
+        <input type="text" id="search-input" placeholder="по тексту задачи..." />
+      </div>
+      <div class="field">
+        <label for="limit-select">На странице:</label>
+        <select id="limit-select">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+        </select>
+      </div>
     </div>
 
     <ul id="todo-list"></ul>
+
+    <div class="pagination">
+      <button id="prev-page">← Назад</button>
+      <span id="page-info"></span>
+      <button id="next-page">Вперёд →</button>
+    </div>
   </div>
 
-  <!-- Модальное окно -->
+  <!-- Модальное окно: завершение -->
   <div id="modal" class="modal">
     <div class="modal-content">
-      <span class="close">&times;</span>
+      <span class="close" data-modal="modal">&times;</span>
       <h3>Завершить задачу</h3>
       <textarea id="comment-input" placeholder="Комментарий..."></textarea>
       <button id="complete-btn">Завершить</button>
     </div>
   </div>
 
-  <script src="../app.js"></script>
+  <!-- Модальное окно: редактирование -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" data-modal="edit-modal">&times;</span>
+      <h3>Редактировать задачу</h3>
+      <label>Текст</label>
+      <input type="text" id="edit-text" />
+      <label>Дата и время задачи</label>
+      <input type="datetime-local" id="edit-plan" />
+      <label>Срок исполнения</label>
+      <input type="datetime-local" id="edit-due" />
+      <label>Приоритет</label>
+      <select id="edit-priority">
+        <option value="low">Низкий</option>
+        <option value="medium">Средний</option>
+        <option value="high">Высокий</option>
+      </select>
+      <label>Тег</label>
+      <input type="text" id="edit-tag" />
+      <label>Повтор</label>
+      <select id="edit-repeat">
+        <option value="none">Нет</option>
+        <option value="daily">Каждый день</option>
+        <option value="weekly">Каждую неделю</option>
+        <option value="monthly">Каждый месяц</option>
+      </select>
+      <button id="edit-save-btn">Сохранить</button>
+    </div>
+  </div>
+
+  <!-- Модальное окно: детали (история и вложения) -->
+  <div id="info-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" data-modal="info-modal">&times;</span>
+      <h3>Детали задачи</h3>
+      <h4>Вложения</h4>
+      <ul id="attach-list" class="attach-list"></ul>
+      <input type="file" id="attach-input" />
+      <h4>История</h4>
+      <ul id="history-list" class="history-list"></ul>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>

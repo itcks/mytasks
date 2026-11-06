@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Доска задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="theme.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Доска задач</h1>
+    <p id="user-info"></p>
+    <div style="text-align: right;">
+      <button id="theme-toggle">🌙 Ночь</button>
+      <button id="back-btn">К списку</button>
+      <button id="logout-btn">Выйти</button>
+    </div>
+    <div class="board" id="board"></div>
+  </div>
+  <script src="board.js"></script>
+</body>
+</html>

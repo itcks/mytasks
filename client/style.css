@@ -1,100 +1,513 @@
+/* ===== Токены темы ===== */
+:root,
+:root[data-theme="light"] {
+  --bg: #e9eef1;
+  --surface: #ffffff;
+  --surface-2: #f3f6f8;
+  --ink: #17272e;
+  --muted: #5d7078;
+  --line: #d7dfe3;
+  --accent: #0e6e63;
+  --accent-ink: #ffffff;
+  --accent-soft: #d8eae7;
+  --danger: #b3261e;
+  --warn-bg: #fdf3d7;
+  --overdue-bg: #fbe4e2;
+  --shadow: 0 2px 10px rgba(23, 39, 46, 0.08);
+  --cal-today: #dcebfa;
+  --cal-tasks: #fdf3d7;
+}
+
+:root[data-theme="dark"] {
+  --bg: #10181d;
+  --surface: #17222a;
+  --surface-2: #1e2b34;
+  --ink: #e4edf0;
+  --muted: #8ca3ad;
+  --line: #2b3a44;
+  --accent: #3fbfaf;
+  --accent-ink: #10201d;
+  --accent-soft: #1e3a37;
+  --danger: #ff8a80;
+  --warn-bg: #3a3119;
+  --overdue-bg: #3d1f1c;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  --cal-today: #23405e;
+  --cal-tasks: #3a3119;
+}
+
+/* ===== База ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif;
+  background-color: var(--bg);
+  color: var(--ink);
   margin: 0;
   padding: 20px;
+  transition: background-color 0.25s, color 0.25s;
 }
 
-.container {
-  max-width: 500px;
-  margin: auto;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
 }
 
 h1 {
-  text-align: center;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 1.7rem;
 }
 
-#todo-form {
+h4 {
+  margin: 12px 0 4px;
+}
+
+.muted { color: var(--muted); }
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: var(--surface);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: background-color 0.25s;
+}
+
+.container > div[style*="text-align: right"] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#user-info {
+  color: var(--muted);
+  margin: 4px 0 10px;
+}
+
+.container > div[style*="text-align: right"] {
+  margin-bottom: 16px;
+}
+
+/* ===== Кнопки и поля ===== */
+button {
+  padding: 9px 14px;
+  font-size: 15px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+#todo-form button[type="submit"],
+#user-form button[type="submit"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+#todo-form,
+#user-form {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
 }
 
-#todo-input {
-  flex-grow: 1;
-  padding: 10px;
-  font-size: 16px;
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-button {
-  padding: 10px 15px;
+.field label {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field input,
+.field select {
+  padding: 9px 10px;
   font-size: 16px;
-  cursor: pointer;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.user-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 15px;
+}
+
+.user-form .field {
+  flex: 1 1 180px;
 }
 
 .sort-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
   margin: 15px 0;
 }
 
+/* ===== Список задач ===== */
 ul {
   list-style-type: none;
   padding-left: 0;
 }
 
 li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: 5px;
-  background-color: #fafafa;
-  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--muted);
+  border-radius: 8px;
+  transition: border-color 0.15s;
 }
 
 li.completed {
   text-decoration: line-through;
-  color: gray;
+  color: var(--muted);
 }
 
 li.overdue {
-  background-color: #ffe6e6 !important;
+  background-color: var(--overdue-bg) !important;
+  border-left-color: var(--danger);
+}
+
+li.highlight {
+  outline: 2px solid var(--accent);
+}
+
+.todo-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .todo-info {
-  font-size: 0.9em;
-  color: #666;
+  font-size: 0.88em;
+  color: var(--muted);
+  margin-top: 4px;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.8em;
+  word-break: break-word;
 }
 
-.actions button {
-  margin-left: 10px;
+.actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
+.actions button,
+.actions select {
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+/* Плашки */
+.chips {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-size: 0.72em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.chip.status-new { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.chip.status-in_progress { background: var(--warn-bg); color: #a67c00; }
+.chip.status-done { background: #d9f2d9; color: #237023; }
+.chip.status-rejected { background: var(--overdue-bg); color: var(--danger); }
+.chip.prio-high { background: var(--overdue-bg); color: var(--danger); font-weight: 700; }
+.chip.prio-low { background: var(--line); color: var(--muted); }
+
+/* Цветной рельс статуса на карточке */
+li { border-left: 4px solid var(--muted); }
+li:has(.chip.status-new) { border-left-color: var(--accent); }
+li:has(.chip.status-in_progress) { border-left-color: #d9a406; }
+li:has(.chip.status-done) { border-left-color: #3e9b4f; }
+li:has(.chip.status-rejected) { border-left-color: var(--danger); }
+
+/* ===== Календарь ===== */
+.calendar {
+  margin-bottom: 20px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.calendar-header strong {
+  font-size: 1.05em;
+}
+
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.calendar-table th {
+  font-size: 0.75em;
+  color: var(--muted);
+  padding: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.calendar-table td {
+  border: 1px solid var(--line);
+  text-align: right;
+  padding: 4px;
+  height: 36px;
+  vertical-align: top;
+  font-size: 0.85em;
+  font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+.calendar-table td.today {
+  background-color: var(--cal-today);
+  font-weight: 700;
+}
+
+.calendar-table td.has-tasks {
+  background-color: var(--cal-tasks);
+}
+
+.cal-count {
+  display: block;
+  text-align: left;
+  color: var(--muted);
+  font-weight: bold;
+}
+
+.cal-task {
+  display: block;
+  text-align: left;
+  font-size: 0.75em;
+  color: var(--ink);
+  background: var(--surface);
+  border-left: 3px solid var(--muted);
+  border-radius: 3px;
+  padding: 1px 4px;
+  margin-top: 2px;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: "Manrope", sans-serif;
+}
+
+.cal-task.prio-high { border-left-color: var(--danger); }
+.cal-task.prio-low { border-left-color: var(--muted); }
+
+.cal-task:hover {
+  border-color: var(--accent);
+}
+
+/* ===== Пагинация ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+/* ===== Таблицы ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+table th,
+table td {
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 0.95em;
+}
+
+table th {
+  background-color: var(--surface-2);
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* ===== Уведомления ===== */
+.badge {
+  background: var(--danger);
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 0.78em;
+  margin-left: 3px;
+}
+
+.notif-panel {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 15px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--surface-2);
+}
+
+.notif-panel ul { margin: 8px 0 0; }
+
+.notif-panel li {
+  background: var(--surface);
+  cursor: pointer;
+  padding: 9px;
+  margin-bottom: 5px;
+  font-family: "Manrope", sans-serif;
+  border-left: 3px solid var(--accent);
+}
+
+.notif-panel li.unread {
+  font-weight: 600;
+}
+
+.notif-panel li small {
+  color: var(--muted);
+  font-weight: normal;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85em;
+}
+
+/* ===== Модальные окна ===== */
 .modal {
   display: none;
   position: fixed;
   z-index: 999;
   left: 0; top: 0;
   width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(10, 18, 22, 0.55);
 }
 
 .modal-content {
-  background-color: #fff;
-  margin: 15% auto;
+  background-color: var(--surface);
+  color: var(--ink);
+  margin: 12% auto;
   padding: 20px;
+  border-radius: 12px;
+  width: 320px;
+  box-shadow: var(--shadow);
+}
+
+.modal-content textarea,
+#edit-modal input,
+#edit-modal select {
+  width: 100%;
+  padding: 9px;
+  font-size: 15px;
+  border: 1px solid var(--line);
   border-radius: 8px;
-  width: 300px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  background: var(--surface-2);
+  color: var(--ink);
 }
 
 .modal-content textarea {
-  width: 100%;
   height: 80px;
-  margin-bottom: 10px;
+  margin: 8px 0 10px;
+}
+
+#edit-modal label,
+#info-modal h4 {
+  display: block;
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 10px 0 2px;
+}
+
+#edit-modal button {
+  margin-top: 12px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  font-weight: 600;
+  width: 100%;
+}
+
+.history-list,
+.attach-list {
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 0.88em;
+}
+
+.history-list li,
+.attach-list li {
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  display: block;
+  border-left: 3px solid var(--line);
+  text-decoration: none;
+}
+
+.attach-list a {
+  color: var(--accent);
 }
 
 .close {
@@ -102,108 +515,171 @@ li.overdue {
   cursor: pointer;
   font-size: 20px;
   font-weight: bold;
-}body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  margin: 0;
-  padding: 20px;
+  background: none;
+  border: none;
+  color: var(--muted);
 }
 
-.container {
-  max-width: 500px;
-  margin: auto;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-h1 {
-  text-align: center;
-}
-
-#todo-form {
+/* ===== Kanban-доска ===== */
+.board {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  align-items: flex-start;
+  clear: both;
 }
 
-#todo-input {
-  flex-grow: 1;
+.board-col {
+  flex: 1 0 230px;
+  min-width: 230px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
   padding: 10px;
-  font-size: 16px;
 }
 
-button {
-  padding: 10px 15px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.sort-controls {
-  margin: 15px 0;
-}
-
-ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-
-li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: 5px;
-  background-color: #fafafa;
-  border-radius: 4px;
-}
-
-li.completed {
-  text-decoration: line-through;
-  color: gray;
-}
-
-li.overdue {
-  background-color: #ffe6e6 !important;
-}
-
-.todo-info {
+.board-col h3 {
+  margin: 0 0 10px;
   font-size: 0.9em;
-  color: #666;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
 }
 
-.actions button {
-  margin-left: 10px;
+.board-col.over {
+  outline: 2px dashed var(--accent);
 }
 
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 999;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.4);
-}
-
-.modal-content {
-  background-color: #fff;
-  margin: 15% auto;
-  padding: 20px;
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
   border-radius: 8px;
-  width: 300px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  padding: 10px;
+  margin-bottom: 8px;
+  cursor: grab;
 }
 
-.modal-content textarea {
-  width: 100%;
-  height: 80px;
-  margin-bottom: 10px;
+.card.dragging { opacity: 0.5; }
+.card.ghost {
+  opacity: 0.9;
+  transform: rotate(2deg);
+}
+.card.prio-high { border-left-color: var(--danger); }
+.card.prio-low { border-left-color: var(--muted); }
+
+.card-meta {
+  font-size: 0.78em;
+  color: var(--muted);
+  margin-top: 4px;
+  font-family: "JetBrains Mono", monospace;
 }
 
-.close {
-  float: right;
-  cursor: pointer;
-  font-size: 20px;
-  font-weight: bold;
+.card-move {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.card-move button {
+  padding: 6px 10px;
+  font-size: 0.8em;
+}
+
+/* ===== Печать ===== */
+@media print {
+  .actions, .pagination, .sort-controls, #todo-form, button { display: none !important; }
+}
+
+/* ===== Мобильная версия ===== */
+@media (max-width: 1024px) {
+  /* Доска: колонки друг под другом уже на планшетах */
+  .board {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .board-col {
+    width: 100%;
+    min-width: 0;
+    flex: none;
+  }
+}
+
+@media (max-width: 768px) {
+  body { padding: 10px; }
+
+  .container { padding: 14px; }
+
+  .container > div[style*="text-align: right"] {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .container > div[style*="text-align: right"] button {
+    width: 100%;
+  }
+
+  .calendar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar-table { min-width: 480px; }
+
+  #todo-form,
+  #user-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #todo-form .field input,
+  #todo-form .field select {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  #todo-form button[type="submit"] {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .sort-controls { flex-direction: column; align-items: stretch; }
+
+  .sort-controls select,
+  .sort-controls input {
+    width: 100%;
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  html, body { overflow-x: hidden; }
+
+  li { padding: 14px; }
+
+  .actions button,
+  .actions select {
+    min-height: 44px;
+    font-size: 15px;
+    flex: 1 1 40%;
+  }
+
+  .pagination button {
+    flex: 1;
+    min-height: 44px;
+  }
+
+  table th,
+  table td {
+    padding: 4px 6px;
+    font-size: 0.85em;
+  }
+  /* Мобильная доска: колонки друг под другу */
+  .card { padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
 }

@@ -7,5 +7,8 @@ module.exports = {
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'todo_app'
   },
-  jwtSecret: process.env.JWT_SECRET || 'my-secret-key'
+  jwtSecret: process.env.JWT_SECRET || 'my-secret-key',
+  botApiKey: process.env.BOT_API_KEY || 'change-me-bot-key',
+  maxBotToken: process.env.MAX_BOT_TOKEN || '',
+  maxApiUrl: process.env.MAX_API_URL || 'https://botapi.max.ru'
 };

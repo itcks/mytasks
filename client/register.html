@@ -2,12 +2,18 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Регистрация</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script src="theme.js"></script>
 </head>
 <body>
   <div class="container" id="auth-container">
     <h1>Регистрация</h1>
+    <div style="text-align: right;"><button id="theme-toggle">🌙 Ночь</button></div>
     <p id="error-message"></p>
     <form id="register-form">
       <input type="text" id="reg-username" placeholder="Имя пользователя" required />
@@ -16,6 +22,6 @@
     </form>
     <p>Уже есть аккаунт? <a href="/login.html">Войдите</a></p>
   </div>
-  <script src="../app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
