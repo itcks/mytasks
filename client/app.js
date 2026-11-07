@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("todo-form");
   const input = document.getElementById("todo-input");
   const planDateInput = document.getElementById("todo-plan-date");
@@ -202,12 +202,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  notifBtn.addEventListener("click", () => {
+  notifBtn?.addEventListener("click", () => {
     notifPanel.style.display = notifPanel.style.display === "none" ? "block" : "none";
     if (notifPanel.style.display === "block") fetchNotifications();
   });
 
-  notifReadBtn.addEventListener("click", async () => {
+  notifReadBtn?.addEventListener("click", async () => {
     await apiFetch("/api/notifications/read", { method: "POST" });
     fetchNotifications();
   });
@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const maxLinkBtn = document.getElementById("max-link-btn");
   const maxCodeBox = document.getElementById("max-code-box");
 
-  maxLinkBtn.addEventListener("click", async () => {
+  maxLinkBtn?.addEventListener("click", async () => {
     try {
       const link = await apiFetch("/api/link-code", { method: "POST" });
       maxCodeBox.style.display = "block";
@@ -400,7 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
     editModal.style.display = "block";
   }
 
-  editSaveBtn.addEventListener("click", async () => {
+  editSaveBtn?.addEventListener("click", async () => {
     if (!editTaskId) return;
     await updateTodo(editTaskId, {
       text: editText.value,
@@ -444,7 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  attachInput.addEventListener("change", async () => {
+  attachInput?.addEventListener("change", async () => {
     const file = attachInput.files[0];
     if (!file || !infoTaskId) return;
     if (file.size > 10 * 1024 * 1024) {
@@ -556,7 +556,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Обработчики ---
 
-  form.addEventListener("submit", async (e) => {
+  form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = input.value.trim();
     const planDate = planDateInput.value ? planDateInput.value.replace('T', ' ') + ':00' : null;
@@ -581,7 +581,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  completeBtn.addEventListener("click", async () => {
+  completeBtn?.addEventListener("click", async () => {
     const comment = commentInput.value.trim();
     if (currentTaskId) {
       await updateTodo(currentTaskId, {
@@ -602,17 +602,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  sortSelect.addEventListener("change", fetchTodos);
-  statusSelect.addEventListener("change", () => { currentPage = 1; fetchTodos(); });
-  priorityFilter.addEventListener("change", () => { currentPage = 1; fetchTodos(); });
-  limitSelect.addEventListener("change", () => { currentPage = 1; fetchTodos(); });
-  tagFilter.addEventListener("change", () => { currentPage = 1; fetchTodos(); });
-  searchInput.addEventListener("input", () => {
+  sortSelect?.addEventListener("change", fetchTodos);
+  statusSelect?.addEventListener("change", () => { currentPage = 1; fetchTodos(); });
+  priorityFilter?.addEventListener("change", () => { currentPage = 1; fetchTodos(); });
+  limitSelect?.addEventListener("change", () => { currentPage = 1; fetchTodos(); });
+  tagFilter?.addEventListener("change", () => { currentPage = 1; fetchTodos(); });
+  searchInput?.addEventListener("input", () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => { currentPage = 1; fetchTodos(); }, 300);
   });
-  prevPageBtn.addEventListener("click", () => { if (currentPage > 1) { currentPage--; fetchTodos(); } });
-  nextPageBtn.addEventListener("click", () => { currentPage++; fetchTodos(); });
+  prevPageBtn?.addEventListener("click", () => { if (currentPage > 1) { currentPage--; fetchTodos(); } });
+  nextPageBtn?.addEventListener("click", () => { currentPage++; fetchTodos(); });
 
   // --- Страницы входа ---
   const registerForm = document.getElementById("register-form");
