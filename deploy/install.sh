@@ -15,16 +15,52 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+echo "==> Проверка свободного места"
+FREE_MB=$(df -Pm / | awk 'NR==2 {print $4}')
+if [ "$FREE_MB" -lt 2000 ]; then
+  echo "    ВНИМАНИЕ: на корневом разделе только ${FREE_MB} МБ свободно."
+  echo "    Установка требует ~2 ГБ. Очистите место или увеличьте диск контейнера:"
+  echo "      (на узле Proxmox)  pct resize <VMID> rootfs +6G"
+  echo "      (в контейнере)     apt clean && journalctl --vacuum-size=50M"
+  exit 1
+fi
+
 echo "==> Обновление системы и базовые пакеты"
 apt update && apt full-upgrade -y
 apt install -y curl git ca-certificates gnupg
+apt clean
+rm -rf /var/lib/apt/lists/*
 
 echo "==> Node.js 22"
-if ! command -v node >/dev/null 2>&1; then
+NODE_OK=0
+if command -v node >/dev/null 2>&1; then
+  NODE_MAJOR=$(node -e "console.log(process.versions.node.split('.')[0])" 2>/dev/null || echo 0)
+  if [ "$NODE_MAJOR" -ge 18 ]; then
+    NODE_OK=1
+    echo "    Найден подходящий Node.js $(node --version)"
+  else
+    echo "    Найден слишком старый Node.js $(node --version) — заменяю."
+    apt purge -y nodejs libnode* nodejs-doc 2>/dev/null || true
+  fi
+fi
+
+if [ "$NODE_OK" = "0" ]; then
+  apt update
   curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt install -y nodejs
+  apt clean
 fi
+
+# Жёсткая проверка: версия >= 18 и npm на месте
+NODE_MAJOR=$(node -e "console.log(process.versions.node.split('.')[0])" 2>/dev/null || echo 0)
+if [ "$NODE_MAJOR" -lt 18 ]; then
+  echo "    ОШИБКА: не удалось установить Node.js 18+ (сейчас: $(node --version 2>/dev/null || echo 'нет'))."
+  echo "    Частая причина — не хватило места на диске. Проверьте: df -h /"
+  exit 1
+fi
+apt install -y npm || true
 node --version
+npm --version
 
 echo "==> Клонирование приложения в $APP_DIR"
 if [ -d "$APP_DIR/.git" ]; then
