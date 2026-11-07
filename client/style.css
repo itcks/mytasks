@@ -433,6 +433,31 @@ table th {
   font-size: 0.85em;
 }
 
+.notif-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.max-code-box {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px dashed var(--accent);
+  border-radius: 8px;
+  font-size: 0.9em;
+}
+
+.max-code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1.6em;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  color: var(--accent);
+  margin: 6px 0;
+  text-align: center;
+}
+
 /* ===== Модальные окна ===== */
 .modal {
   display: none;

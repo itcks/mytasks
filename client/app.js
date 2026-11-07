@@ -212,6 +212,23 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchNotifications();
   });
 
+  // --- Привязка МАКС ---
+  const maxLinkBtn = document.getElementById("max-link-btn");
+  const maxCodeBox = document.getElementById("max-code-box");
+
+  maxLinkBtn.addEventListener("click", async () => {
+    try {
+      const link = await apiFetch("/api/link-code", { method: "POST" });
+      maxCodeBox.style.display = "block";
+      maxCodeBox.innerHTML =
+        `<div>Одноразовый код (действует 10 минут):</div>` +
+        `<div class="max-code">${escapeHtml(link.code)}</div>` +
+        `<div>Отправьте его боту МАКС одним сообщением — чат будет привязан к вашему аккаунту. Уведомления о задачах начнут приходить в МАКС.</div>`;
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
   // --- Рендер списка ---
   function escapeHtml(s) {
     return String(s ?? "").replace(/[&<>"']/g, c => ({

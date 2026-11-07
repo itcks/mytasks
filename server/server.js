@@ -6,6 +6,7 @@ const routes = require('./routes');
 const db = require('./db');
 const bcrypt = require('bcryptjs');
 const notify = require('./notify');
+const bot = require('./bot');
 
 // Создание учётных записей по умолчанию, если их нет
 async function seedUsers() {
@@ -70,4 +71,5 @@ process.on('unhandledRejection', err => console.error('unhandled:', err));
 app.listen(PORT, HOST, () => {
   console.log(`Сервер запущен на http://${HOST}:${PORT}`);
   seedUsers();
+  bot.start();
 });

@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const config = require('./config');
 const bcrypt = require('bcryptjs');
 const notify = require('./notify');
+const bot = require('./bot');
 
 const STATUSES = ['new', 'in_progress', 'done', 'rejected'];
 const PRIORITIES = ['low', 'medium', 'high'];
@@ -499,6 +500,19 @@ router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) =>
     const [result] = await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ error: 'Пользователь не найден' });
     res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// --- Одноразовый код привязки мессенджера МАКС ---
+router.post('/link-code', authenticateToken, async (req, res) => {
+  try {
+    const [users] = await db.query('SELECT * FROM users WHERE id = ?', [req.user.id]);
+    const user = users[0];
+    if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+    const link = await bot.createLinkCode(user);
+    res.json(link);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
