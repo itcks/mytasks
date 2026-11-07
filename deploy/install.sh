@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Полная установка MyTasks в LXC-контейнере (Debian 12 / Ubuntu 24.04).
-# Запуск: sudo bash install.sh [домен]
-# Пример: sudo bash install.sh tasks.example.ru
+# Запуск: sudo bash install.sh [домен] [токен-бота-МАКС]
+# Пример: sudo bash install.sh tasks.example.ru eyJhbGciOi...
 # Если домен не указан — будет установлен без nginx, сервер на порту 3000.
 set -euo pipefail
 
 DOMAIN="${1:-}"
+MAX_TOKEN="${2:-}"
 APP_DIR="/opt/mytasks"
 REPO="https://github.com/itcks/mytasks.git"
 
@@ -50,6 +51,36 @@ if [ ! -f .env ]; then
   echo "    .env создан со случайными секретами."
 else
   echo "    .env уже существует — не трогаю."
+fi
+
+# ===== Подключение бота МАКС =====
+if [ -z "$MAX_TOKEN" ] && [ -t 0 ]; then
+  echo ""
+  echo "Настройка бота МАКС (для уведомлений в мессенджер)."
+  echo "Создайте бота через @MasterBot в МАКС и вставьте его токен."
+  read -r -p "Токен бота МАКС (Enter — пропустить): " MAX_TOKEN || MAX_TOKEN=""
+fi
+
+if [ -n "$MAX_TOKEN" ]; then
+  echo "==> Проверка токена бота МАКС"
+  BOT_OK=$(curl -s "https://botapi.max.ru/me?access_token=$MAX_TOKEN" | head -c 200 || true)
+  if echo "$BOT_OK" | grep -q '"ok":true'; then
+    if grep -q '^MAX_BOT_TOKEN=' .env; then
+      sed -i "s|^MAX_BOT_TOKEN=.*|MAX_BOT_TOKEN=$MAX_TOKEN|" .env
+    else
+      echo "MAX_BOT_TOKEN=$MAX_TOKEN" >> .env
+    fi
+    chmod 600 .env
+    echo "    Токен сохранён, уведомления в МАКС включены."
+    echo "    Пользователи привязывают чат боту в МАКС; без привязки уведомления"
+    echo "    всё равно приходят в веб-интерфейс (колокольчик)."
+  else
+    echo "    ВНИМАНИЕ: Bot API не подтвердил токен. Ответ: $BOT_OK"
+    echo "    Проверьте токен позже: nano $APP_DIR/server/.env"
+  fi
+else
+  echo "    Токен бота МАКС не указан — уведомления работают в веб-интерфейсе."
+  echo "    Подключить позже: sudo nano $APP_DIR/server/.env (MAX_BOT_TOKEN=...)"
 fi
 
 echo "==> systemd-сервис mytasks"

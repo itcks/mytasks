@@ -65,12 +65,15 @@ node server.js
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/itcks/mytasks/main/deploy/install.sh -o install.sh
-sudo bash install.sh tasks.example.ru
+sudo bash install.sh tasks.example.ru токен-бота-МАКС
 ```
 
 `tasks.example.ru` — ваш домен, A-запись которого указывает на сервер,
 порты 80 и 443 открыты. Сертификат, HTTPS, автопродление и автозапуск
-настроятся автоматически.
+настроятся автоматически. Токен бота МАКС можно указать вторым аргументом
+или ввести при запросе скриптом (пропуск — уведомления останутся только
+в веб-интерфейсе). Скрипт проверяет токен через Bot API и включает доставку
+уведомлений в МАКС.
 
 Без домена (внутренняя сеть):
 
