@@ -647,14 +647,27 @@ table th {
   .container > div[style*="text-align: right"] button {
     width: 100%;
   }
-
   .calendar {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  .calendar-table { min-width: 480px; }
+  .calendar-table {
+    min-width: 0;
+    width: 100%;
+    table-layout: fixed;
+  }
 
+  .calendar-table th,
+  .calendar-table td {
+    font-size: 0.78em;
+    padding: 2px;
+    height: 28px;
+  }
+
+  .cal-task {
+    font-size: 0.7em;
+  }
   #todo-form,
   #user-form {
     flex-direction: column;
